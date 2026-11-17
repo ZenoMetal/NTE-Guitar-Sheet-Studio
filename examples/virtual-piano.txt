@@ -1,0 +1,6 @@
+// Original C-major practice pattern. Virtual Piano / Roblox layout.
+// 120 BPM, 2 steps per beat. Chords, rests and a fast roll.
+[tuo] - t y u - [yip] -- (tyu) [tuo]
+
+// Square brackets and braces both group simultaneous notes.
+{tuo} - [yip] - [uos] -- [tuo]
