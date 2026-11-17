@@ -1,0 +1,23 @@
+{
+  "core_tests_passed": 36,
+  "qt_midi_import": "passed",
+  "qt_midi_conversion_install": "passed",
+  "qt_text_conversion_install": "passed",
+  "clipboard_copy": "passed",
+  "previous_recording_preserved": "passed",
+  "json_backup_matches_installed_file": "passed",
+  "gui_sizes_rendered": [
+    [
+      1260,
+      960
+    ],
+    [
+      980,
+      760
+    ]
+  ],
+  "linux_packaged_self_test": "passed",
+  "windows_runtime_tested": false,
+  "nte_in_game_playback_tested": false,
+  "test_game_cache_modified": false
+}

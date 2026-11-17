@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nte-local-music-sheet-creator"
+version = "1.0.0"
+description = "An offline desktop application for converting MIDI and Virtual Piano notation into local NTE guitar music sheets."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["PySide6>=6.8,<7"]
+keywords = ["nte", "midi", "virtual-piano", "music-sheets", "pyside6"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX :: Linux",
+  "Topic :: Multimedia :: Sound/Audio :: MIDI",
+]
+
+[project.scripts]
+nte-local-music-sheet-creator = "nte_studio.ui:main"
+
+[tool.setuptools.packages.find]
+include = ["nte_studio*"]
+
+[tool.setuptools.package-data]
+nte_studio = ["assets/*.svg"]
