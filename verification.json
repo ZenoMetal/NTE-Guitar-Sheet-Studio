@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1",
   "unit_tests_passed": 49,
   "gui_tests": "passed: automatic MIDI titles, exact duration export, 3 tabs, live selection, settings, named collection",
   "languages": [

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nte-guitar-sheet-studio"
-version = "2.0.0"
+version = "2.0.1"
 description = "An offline desktop application for converting MIDI and Virtual Piano notation into local NTE guitar music sheets."
 readme = "README.md"
 requires-python = ">=3.10"
