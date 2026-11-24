@@ -1,5 +1,6 @@
 """Explicit, configurable keyboard-sheet syntax with nested chords and rolls."""
 import json
+import math
 from dataclasses import dataclass
 
 from .model import Note, SheetError
@@ -125,20 +126,23 @@ class Parser:
         return result
 
 
-def parse_text(text, mapping, bpm=120, steps_per_beat=2, gate=.85):
+def validate_timing(bpm, steps_per_beat, gate):
     if not 20 <= bpm <= 400:
         raise SheetError('Tempo must be between 20 and 400 BPM.')
     if steps_per_beat not in (1, 2, 4, 8):
         raise SheetError('Choose 1, 2, 4 or 8 steps per beat.')
     if not .1 <= gate <= 1:
         raise SheetError('Note length must be between 10% and 100%.')
+
+
+def compile_steps(text, mapping):
+    """Compile notation once in step units, independent of the chosen tempo."""
     nodes = Parser(text, mapping).sequence()
-    step = 60 / bpm / steps_per_beat
-    notes = []
+    events = []
 
     def emit(node, start, unit):
         if node.kind == 'note':
-            notes.append(Note(start, start + max(.025, unit * gate), node.value, source='text'))
+            events.append((start, unit, node.value))
             return unit
         if node.kind == 'rest':
             return unit * node.value
@@ -151,7 +155,45 @@ def parse_text(text, mapping, bpm=120, steps_per_beat=2, gate=.85):
 
     cursor = 0
     for node in nodes:
-        cursor += emit(node, cursor, step)
-    if not notes:
+        cursor += emit(node, cursor, 1)
+    if not events:
         raise SheetError('Paste at least one playable note or chord.')
+    return events, cursor
+
+
+def fitted_tempo(events, cursor, seconds, steps_per_beat, gate):
+    if not math.isfinite(seconds) or seconds <= 0:
+        raise SheetError('Target length must be greater than zero.')
+    # Duration is the maximum of two linear functions of the step length:
+    # the timeline/gated ends, and the final onset plus the 25 ms minimum gate.
+    linear_end = max(cursor, max(start + unit * gate for start, unit, _ in events))
+    last_onset = max(start for start, _, _ in events)
+    def duration(bpm):
+        step = 60 / bpm / steps_per_beat
+        return max(linear_end * step, last_onset * step + .025)
+    shortest, longest = duration(400), duration(20)
+    if seconds < shortest - 1e-9 or seconds > longest + 1e-9:
+        raise SheetError(f'Target length must be between {shortest:.3f} and {longest:.3f} seconds '
+                         'for this sheet at the current steps per beat (20–400 BPM).')
+    step = seconds / linear_end
+    if last_onset:
+        step = min(step, (seconds - .025) / last_onset)
+    return max(20.0, min(400.0, 60 / step / steps_per_beat))
+
+
+def tempo_for_duration(text, mapping, seconds, steps_per_beat=2, gate=.85):
+    validate_timing(120, steps_per_beat, gate)
+    events, cursor = compile_steps(text, mapping)
+    return fitted_tempo(events, cursor, seconds, steps_per_beat, gate)
+
+
+def parse_text(text, mapping, bpm=120, steps_per_beat=2, gate=.85, target_duration=None):
+    validate_timing(bpm, steps_per_beat, gate)
+    events, cursor = compile_steps(text, mapping)
+    if target_duration is not None:
+        bpm = fitted_tempo(events, cursor, target_duration, steps_per_beat, gate)
+    step = 60 / bpm / steps_per_beat
+    notes = [Note(start * step, start * step + max(.025, unit * step * gate), pitch, source='text')
+             for start, unit, pitch in events]
+    cursor *= step
     return notes, max(cursor, max(n.end for n in notes))

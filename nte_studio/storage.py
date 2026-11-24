@@ -14,8 +14,8 @@ from .model import SheetError
 
 def data_directory():
     if os.name == 'nt':
-        return Path(os.environ.get('LOCALAPPDATA', Path.home() / 'AppData/Local')) / 'NTE Local Music Sheet Creator'
-    return Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share')) / 'nte-local-music-sheet-creator'
+        return Path(os.environ.get('LOCALAPPDATA', Path.home() / 'AppData/Local')) / 'NTE Guitar Sheet Studio'
+    return Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share')) / 'nte-guitar-sheet-studio'
 
 
 def detect_destinations(home=None, environ=None, platform=None):

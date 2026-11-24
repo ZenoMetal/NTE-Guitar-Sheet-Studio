@@ -1,2 +1,2 @@
-"""NTE Local Music Sheet Creator — local, offline music-sheet conversion."""
-__version__ = '1.0.0'
+"""NTE Guitar Sheet Studio."""
+__version__ = "2.0.0"
