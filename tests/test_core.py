@@ -282,7 +282,7 @@ class StorageTests(unittest.TestCase):
             expected = library / 'steamapps/compatdata/4508340/pfx/drive_c/users/steamuser/AppData/Local/HT/Saved_GlobalSteam/GuitarNotes'
             expected.mkdir(parents=True)
             result = detect_destinations(root, {}, 'posix')
-            self.assertEqual([path for _, path in result], [expected])
+            self.assertEqual([path for _, path in result], [expected.resolve()])
 
     def test_user_mounted_library_without_vdf_entry(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -290,7 +290,7 @@ class StorageTests(unittest.TestCase):
             target = root / 'diskmounts/drive/SteamLibrary/steamapps/compatdata/4508340/pfx/drive_c/users/steamuser/AppData/Local/HT/Saved_GlobalSteam/GuitarNotes'
             target.mkdir(parents=True)
             result = detect_destinations(root, {}, 'posix')
-            self.assertIn(target, [p for _, p in result])
+            self.assertIn(target.resolve(), [p for _, p in result])
 
     def test_relative_or_empty_destination_rejected(self):
         doc, report = convert([Note(0, 1, 60)])
