@@ -1,0 +1,59 @@
+name: Build desktop releases
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt pyinstaller pillow
+      - name: Install Linux desktop libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0 libxkbcommon0 libxcb-cursor0 libasound2
+      - run: python -m unittest discover -s tests -v
+      - name: UI self-test
+        run: python main.py --self-test
+        env:
+          QT_QPA_PLATFORM: offscreen
+      - name: Get official AppImage packager
+        if: runner.os == 'Linux'
+        run: |
+          curl --fail --location --retry 3 https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -o "$RUNNER_TEMP/appimagetool.AppImage"
+          chmod +x "$RUNNER_TEMP/appimagetool.AppImage"
+          echo "APPIMAGETOOL=$RUNNER_TEMP/appimagetool.AppImage" >> "$GITHUB_ENV"
+      - run: python tools/package.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ runner.os }}
+          path: release-dist/*
+          if-no-files-found: error
+  publish:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release view "$RELEASE_TAG" >/dev/null 2>&1 || gh release create "$RELEASE_TAG" --title "NTE Guitar Sheet Studio ${RELEASE_TAG}" --notes "MIDI library, named sheet collection, six interface languages, light/dark themes, live MIDI preview and local sheet creation. Translations are AI-generated. Download the Linux AppImage or Windows executable below."
+          gh release upload "$RELEASE_TAG" assets/* --clobber
