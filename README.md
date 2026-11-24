@@ -22,8 +22,7 @@ and `.midi` files appear in a list; click a song to load it. **Open MIDI…** al
 opens individual files. Loading a new MIDI automatically replaces the sheet title
 with its filename without the extension. You can edit that title before exporting.
 
-The track list is three times its previous minimum height (510 px). Choose parts
-under **USE** and audition them with **Play/Pause**, **Stop**, seeking and volume.
+Choose parts under **USE** and audition them with **Play/Pause**, **Stop**, seeking and volume.
 Changing USE while playing updates the audible parts immediately. Clearing all
 parts pauses playback. **Speed** applies to both preview and export.
 
