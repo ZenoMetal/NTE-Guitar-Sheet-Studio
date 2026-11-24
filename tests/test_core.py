@@ -9,7 +9,7 @@ from nte_studio.convert import convert, validate
 from nte_studio.midi import parse_midi
 from nte_studio.model import Note, Options, SheetError
 from nte_studio.storage import detect_destinations, install_sheet, write_new
-from nte_studio.text_sheet import PRESETS, load_mapping, parse_text
+from nte_studio.text_sheet import PRESETS, load_mapping, parse_text, tempo_for_duration
 
 
 def vlq(n):
@@ -139,6 +139,33 @@ class TextTests(unittest.TestCase):
     def test_trailing_rests(self):
         _, duration = parse_text('t --_', self.mapping)
         self.assertEqual(duration, 1.25)
+
+    def test_target_duration_preserves_steps_and_pitches(self):
+        text = '[tuo] - (ty) {tu} --'
+        for steps in (1, 2, 4, 8):
+            _, original_duration = parse_text(text, self.mapping, 120, steps)
+            target = original_duration * 1.37
+            bpm = tempo_for_duration(text, self.mapping, target, steps)
+            self.assertAlmostEqual(bpm, 120 / 1.37)
+            original, _ = parse_text(text, self.mapping, 120, steps)
+            fitted, duration = parse_text(text, self.mapping, steps_per_beat=steps, target_duration=target)
+            self.assertAlmostEqual(duration, target)
+            self.assertEqual([n.pitch for n in original], [n.pitch for n in fitted])
+            for a, b in zip(original, fitted):
+                self.assertAlmostEqual(b.start, a.start * 1.37)
+
+    def test_target_duration_handles_deep_roll_minimum_gate(self):
+        text = '(t(y(u(o(p(s(d(f))))))))'
+        for bpm in (20, 85.7, 400):
+            _, target = parse_text(text, self.mapping, bpm, 8, .1)
+            fitted = tempo_for_duration(text, self.mapping, target, 8, .1)
+            _, duration = parse_text(text, self.mapping, fitted, 8, .1, target_duration=target)
+            self.assertAlmostEqual(duration, target)
+
+    def test_impossible_target_is_rejected_without_changing_steps(self):
+        for target in (0, -1, float('nan'), float('inf'), .001, 10000):
+            with self.subTest(target=target), self.assertRaises(SheetError):
+                tempo_for_duration('t y u', self.mapping, target, 2)
 
     def test_clear_errors_for_unknown_or_broken_syntax(self):
         for text in ['[tu', 'tu]', '[]', 't\n?', '\\', '', '[t(]']:
