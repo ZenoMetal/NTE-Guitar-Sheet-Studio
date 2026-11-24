@@ -1,6 +1,8 @@
 # Third-party runtime
 
 The desktop interface uses PySide6 (Qt for Python), distributed by The Qt Company.
+MIDI preview uses Qt Multimedia audio output and the application's own
+sample-free synthesizer. No third-party soundfont or instrument samples are included.
 PySide6 is available under LGPLv3/GPLv3 and commercial licensing options.
 Qt and PySide6 retain their respective copyright notices and licenses.
 

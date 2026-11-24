@@ -3,8 +3,8 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "nte-local-music-sheet-creator"
-version = "1.0.0"
+name = "nte-guitar-sheet-studio"
+version = "2.0.0"
 description = "An offline desktop application for converting MIDI and Virtual Piano notation into local NTE guitar music sheets."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -18,10 +18,10 @@ classifiers = [
 ]
 
 [project.scripts]
-nte-local-music-sheet-creator = "nte_studio.ui:main"
+nte-guitar-sheet-studio = "nte_studio.ui:main"
 
 [tool.setuptools.packages.find]
 include = ["nte_studio*"]
 
 [tool.setuptools.package-data]
-nte_studio = ["assets/*.svg"]
+nte_studio = ["assets/*.svg", "assets/*.png"]

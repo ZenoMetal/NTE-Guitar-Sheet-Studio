@@ -12,3 +12,5 @@ dist/
 Thumbs.db
 exports/
 guitar_note_*.json
+
+release-dist/
